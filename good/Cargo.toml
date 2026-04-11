@@ -1,0 +1,10 @@
+[package]
+name = "good"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mad-hatter = "0.1"
+
+[build-dependencies]
+mad-hatter-guardian = "0.1"
