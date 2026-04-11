@@ -1,5 +1,5 @@
 [package]
-name = "story1-ghost-status"
+name = "good-examples"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,3 +8,7 @@ mad-hatter = "0.1"
 
 [build-dependencies]
 mad-hatter-guardian = "0.1"
+
+[[bin]]
+name = "story1_ghost_status"
+path = "src/bin/story1_ghost_status.rs"
