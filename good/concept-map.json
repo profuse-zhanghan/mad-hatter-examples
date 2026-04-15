@@ -1,0 +1,12 @@
+{
+  "transactions": [
+    {
+      "name": "CheckUserAccess",
+      "transactional": true,
+      "failures": [
+        { "id": "db_insert_user", "kind": "io", "on_error": "fatal" },
+        { "id": "db_query", "kind": "io", "on_error": "fatal" }
+      ]
+    }
+  ]
+}

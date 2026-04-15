@@ -1,0 +1,7 @@
+{
+  "users": {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "status": "TEXT NOT NULL DEFAULT 'active'"
+  }
+}

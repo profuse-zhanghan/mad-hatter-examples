@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 mad-hatter = "0.1"
+serde = { version = "1", features = ["derive"] }
 
 [build-dependencies]
 mad-hatter-guardian = "0.1"
