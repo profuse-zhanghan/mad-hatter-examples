@@ -17,23 +17,28 @@
       ]
     },
     {
-      "name": "ImportData",
+      "name": "ProcessOrders",
       "transactional": true,
       "failures": [
         {
-          "id": "config_read",
+          "id": "read_orders",
           "kind": "io",
           "on_error": "fatal"
         },
         {
-          "id": "file_process",
+          "id": "process_single",
           "kind": "io",
           "on_error": "suppress"
         },
         {
-          "id": "summary_write",
+          "id": "write_summary",
           "kind": "io",
           "on_error": "fatal"
+        },
+        {
+          "id": "notify",
+          "kind": "io",
+          "on_error": "suppress"
         },
         {
           "id": "cleanup",

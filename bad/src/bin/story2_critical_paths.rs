@@ -1,90 +1,91 @@
-// Story 2: Critical Paths — Error Handling in a Data Import Tool
-//
-// Scenario: A CLI tool that imports user data from CSV files into a database.
-// Steps: read config → scan directory → process each CSV → write summary → cleanup
-//
-// Problems a typical Rust developer creates:
-// 1. anyhow::Result erases all error types — caller can't distinguish failures
-// 2. .unwrap() on file reads — one bad file crashes the entire import
-// 3. `let _ = ...` silently swallows cleanup errors — no logs, no trace
-// 4. `?` propagates everything identically — config failure and data failure
-//    are treated the same, but they shouldn't be
+//! Story 2: Critical Paths — Order Processing Pipeline
+//!
+//! A typical Rust developer processes a batch of orders from JSON files.
+//! Four classic error-handling anti-patterns:
+//!
+//! 1. `anyhow::Result` + `?` — type erasure, caller can't distinguish
+//!    "file not found" from "JSON parse error"
+//! 2. `.unwrap()` — one bad write crashes the entire pipeline
+//! 3. `eprintln!` — pretend-handling, no structured logging, no trace ID
+//! 4. `let _ =` — silent swallow, disk full and nobody knows
+//!
+//! In the `good/` version you'll rewrite this with Mad Hatter's Critical
+//! three-exit pattern: propagate / suppress / suppress_with.
 
 use anyhow::Result;
+use serde::Deserialize;
 use std::fs;
-use std::path::Path;
 
-#[derive(serde::Deserialize)]
-struct ImportConfig {
-    input_dir: String,
-    output_file: String,
-    delimiter: char,
-}
-
-fn load_config(path: &str) -> Result<ImportConfig> {
-    let text = fs::read_to_string(path)?;
-    let config: ImportConfig = serde_json::from_str(&text)?;
-    Ok(config)
-}
-
-fn process_csv(path: &Path, delimiter: char) -> Result<Vec<String>> {
-    let content = fs::read_to_string(path)?;
-    let records: Vec<String> = content
-        .lines()
-        .skip(1) // skip header
-        .map(|line| {
-            let fields: Vec<&str> = line.split(delimiter).collect();
-            // Bug: unwrap on index — panics if CSV has wrong number of columns
-            format!("{}:{}", fields[0], fields[1].trim())
-        })
-        .collect();
-    Ok(records)
+#[derive(Deserialize)]
+struct Order {
+    id: u64,
+    customer: String,
+    amount: f64,
 }
 
 fn main() -> Result<()> {
-    // Fatal if config missing, but anyhow erases this intent
-    let config = load_config("import-config.json")?;
+    // ── Step 1: Read order list ─────────────────────────────────
+    // anyhow `?` erases the error — caller can't tell whether the file
+    // was missing or the JSON was malformed.
+    let data = fs::read_to_string("orders/pending.json")?;
+    let orders: Vec<Order> = serde_json::from_str(&data)?;
 
-    let entries: Vec<_> = fs::read_dir(&config.input_dir)?
-        .filter_map(|e| e.ok()) // silently skips unreadable entries
-        .filter(|e| e.path().extension().map(|x| x == "csv").unwrap_or(false))
-        .collect();
+    println!("Processing {} orders...", orders.len());
 
-    let mut all_records = Vec::new();
-    let mut failed_files = Vec::new();
+    // ── Step 2: Process each order ──────────────────────────────
+    let mut success_count: u32 = 0;
+    let mut fail_count: u32 = 0;
 
-    for entry in &entries {
-        let path = entry.path();
-        // Bug: unwrap — one malformed CSV kills the whole import
-        match process_csv(&path, config.delimiter) {
-            Ok(records) => all_records.extend(records),
+    for order in &orders {
+        // Validation — eprintln pretends to handle the error
+        if order.amount <= 0.0 {
+            eprintln!(
+                "Warning: skipping order {} for {}: invalid amount {}",
+                order.id, order.customer, order.amount
+            );
+            fail_count += 1;
+            continue;
+        }
+
+        // Write result file — individual failure should NOT crash the
+        // whole pipeline, but this code either unwraps or uses `?` which
+        // does exactly that.
+        let result_json = format!(
+            r#"{{"id":{},"customer":"{}","status":"completed","amount":{}}}"#,
+            order.id, order.customer, order.amount
+        );
+
+        match fs::write(
+            format!("orders/results/{}.json", order.id),
+            &result_json,
+        ) {
+            Ok(_) => success_count += 1,
             Err(e) => {
-                // "Handling" the error by printing and continuing
-                // But: no structured logging, no trace ID, error detail lost
-                eprintln!("Warning: failed to process {}: {}", path.display(), e);
-                failed_files.push(path.display().to_string());
+                // eprintln is not structured logging — no trace ID,
+                // no level, grep-hostile in production
+                eprintln!("Error: order {} failed: {}", order.id, e);
+                fail_count += 1;
             }
         }
     }
 
-    // Write summary — non-atomic write (power failure = corrupted file)
+    // ── Step 3: Write summary report ────────────────────────────
+    // .unwrap() — if this write fails the whole process panics
     let summary = format!(
-        "Imported {} records from {} files ({} failed)\n\nRecords:\n{}",
-        all_records.len(),
-        entries.len(),
-        failed_files.len(),
-        all_records.join("\n")
+        "Batch complete. Success: {}, Failed: {}",
+        success_count, fail_count
     );
-    fs::write(&config.output_file, &summary)?;
+    fs::write("orders/summary.txt", &summary).unwrap();
 
-    // Bug: silently swallow cleanup errors — no log, no trace
-    let _ = fs::remove_file("import.lock");
-    let _ = fs::remove_dir_all("temp_staging");
+    // ── Step 4: Send notification ───────────────────────────────
+    // `let _ =` silently swallows the error — if disk is full or
+    // permissions are wrong, nobody will ever know
+    let _ = fs::write("notifications/batch-done.txt", &summary);
 
-    println!(
-        "Done! {} records imported, {} files failed",
-        all_records.len(),
-        failed_files.len()
-    );
+    // ── Step 5: Cleanup temp directory ──────────────────────────
+    // Another silent swallow
+    let _ = fs::remove_dir_all("orders/temp");
+
+    println!("{}", summary);
     Ok(())
 }
