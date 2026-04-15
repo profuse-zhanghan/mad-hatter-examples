@@ -2,8 +2,8 @@
 mod concept_map;
 use concept_map::{CheckUserAccess, CheckUserAccessFatal};
 
-#[derive(mad_hatter::PersistEnum)]
-#[persist_enum(rename_all = "snake_case")]
+#[derive(mad_hatter::FormatEnum)]
+#[format_enum(rename_all = "snake_case")]
 enum UserStatus {
     Active,
     Suspended,
