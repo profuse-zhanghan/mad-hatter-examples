@@ -4,8 +4,42 @@
       "name": "CheckUserAccess",
       "transactional": true,
       "failures": [
-        { "id": "db_insert_user", "kind": "io", "on_error": "fatal" },
-        { "id": "db_query", "kind": "io", "on_error": "fatal" }
+        {
+          "id": "db_insert_user",
+          "kind": "io",
+          "on_error": "fatal"
+        },
+        {
+          "id": "db_query",
+          "kind": "io",
+          "on_error": "fatal"
+        }
+      ]
+    },
+    {
+      "name": "ImportData",
+      "transactional": true,
+      "failures": [
+        {
+          "id": "config_read",
+          "kind": "io",
+          "on_error": "fatal"
+        },
+        {
+          "id": "file_process",
+          "kind": "io",
+          "on_error": "suppress"
+        },
+        {
+          "id": "summary_write",
+          "kind": "io",
+          "on_error": "fatal"
+        },
+        {
+          "id": "cleanup",
+          "kind": "io",
+          "on_error": "suppress"
+        }
       ]
     }
   ]

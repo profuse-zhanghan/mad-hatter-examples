@@ -6,6 +6,9 @@ edition = "2021"
 [dependencies]
 mad-hatter = "0.1"
 rusqlite = { version = "0.31", features = ["bundled"] }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 
 [build-dependencies]
 mad-hatter-guardian = "0.1"
@@ -13,3 +16,6 @@ mad-hatter-guardian = "0.1"
 [[bin]]
 name = "story1_ghost_status"
 path = "src/bin/story1_ghost_status.rs"
+[[bin]]
+name = "story2_critical_paths"
+path = "src/bin/story2_critical_paths.rs"
