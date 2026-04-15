@@ -26,6 +26,11 @@
           "on_error": "fatal"
         },
         {
+          "id": "parse_orders",
+          "kind": "logic",
+          "on_error": "fatal"
+        },
+        {
           "id": "process_single",
           "kind": "io",
           "on_error": "suppress"

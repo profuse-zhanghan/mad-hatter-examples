@@ -1,0 +1,11 @@
+{
+  "tables": {
+    "users": {
+      "columns": {
+        "id": "INTEGER PRIMARY KEY",
+        "name": "TEXT",
+        "status": "TEXT"
+      }
+    }
+  }
+}
