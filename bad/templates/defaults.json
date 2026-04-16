@@ -1,0 +1,5 @@
+[
+  {"name": "daily_backup", "description": "Daily database backup", "cron": "0 2 * * *"},
+  {"name": "weekly_report", "description": "Weekly summary report", "cron": "0 9 * * 1"},
+  {"name": "health_check", "description": "Service health check", "cron": "*/5 * * * *"}
+]

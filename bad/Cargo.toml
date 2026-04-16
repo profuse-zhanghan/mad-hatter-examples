@@ -19,3 +19,6 @@ path = "src/bin/story1_ghost_status.rs"
 [[bin]]
 name = "story2_critical_paths"
 path = "src/bin/story2_critical_paths.rs"
+[[bin]]
+name = "story3_config_logging"
+path = "src/bin/story3_config_logging.rs"

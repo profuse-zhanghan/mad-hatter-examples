@@ -51,6 +51,17 @@
           "on_error": "suppress"
         }
       ]
+    },
+    {
+      "name": "BootstrapScheduler",
+      "transactional": true,
+      "failures": [
+        {
+          "id": "save_settings",
+          "kind": "io",
+          "on_error": "suppress"
+        }
+      ]
     }
   ]
 }
