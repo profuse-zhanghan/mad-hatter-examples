@@ -28,7 +28,7 @@ mad_hatter::file_store!(OrderLayout, {
 struct Order {
     id: u64,
     customer: String,
-    amount: f64,
+    amount_cents: i64,
 }
 
 #[mad_hatter::main(ProcessOrders)]
@@ -50,15 +50,15 @@ async fn main(scope: &mad_hatter::TxScope<ProcessOrders>) {
     let mut fail_count: u32 = 0;
 
     for order in &orders {
-        // Validation: invalid amount → skip
-        if order.amount <= 0.0 {
+        // Validation: invalid amount → skip (integer 0 is exempt from E102)
+        if order.amount_cents <= 0 {
             fail_count += 1;
             continue;
         }
 
         let result_json = format!(
-            r#"{{"id":{},"customer":"{}","status":"completed","amount":{}}}"#,
-            order.id, order.customer, order.amount
+            r#"{{"id":{},"customer":"{}","status":"completed","amount_cents":{}}}"#,
+            order.id, order.customer, order.amount_cents
         );
 
         let result_path = layout.results().join(format!("{}.json", order.id));
