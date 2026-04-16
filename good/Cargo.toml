@@ -7,6 +7,7 @@ edition = "2021"
 mad-hatter = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+tracing = "0.1"
 
 [build-dependencies]
 mad-hatter-guardian = "0.1"
@@ -18,3 +19,7 @@ path = "src/bin/story1_ghost_status.rs"
 [[bin]]
 name = "story2_critical_paths"
 path = "src/bin/story2_critical_paths.rs"
+
+[[bin]]
+name = "story3_config_logging"
+path = "src/bin/story3_config_logging.rs"

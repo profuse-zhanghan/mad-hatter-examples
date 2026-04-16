@@ -57,6 +57,11 @@
       "transactional": true,
       "failures": [
         {
+          "id": "parse_templates",
+          "kind": "logic",
+          "on_error": "fatal"
+        },
+        {
           "id": "save_settings",
           "kind": "io",
           "on_error": "suppress"
