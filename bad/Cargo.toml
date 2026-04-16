@@ -22,3 +22,6 @@ path = "src/bin/story2_critical_paths.rs"
 [[bin]]
 name = "story3_config_logging"
 path = "src/bin/story3_config_logging.rs"
+[[bin]]
+name = "story4_type_safety"
+path = "src/bin/story4_type_safety.rs"
